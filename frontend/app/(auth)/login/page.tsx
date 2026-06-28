@@ -9,7 +9,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && user) router.replace("/");
+    if (!isLoading && user) router.replace("/dashboard");
   }, [user, isLoading, router]);
 
   const handleGoogleLogin = () => {

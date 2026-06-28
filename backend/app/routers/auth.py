@@ -55,7 +55,7 @@ async def google_callback(
 
     frontend_url = settings.FRONTEND_URL
     redirect = RedirectResponse(
-        url=f"{frontend_url}?access_token={tokens.access_token}&refresh_token={tokens.refresh_token}"
+        url=f"{frontend_url}/dashboard?access_token={tokens.access_token}&refresh_token={tokens.refresh_token}"
     )
     redirect.delete_cookie("oauth_state")
     return redirect
