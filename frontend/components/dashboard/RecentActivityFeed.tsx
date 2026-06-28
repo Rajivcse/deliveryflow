@@ -20,11 +20,11 @@ export function RecentActivityFeed({ activities, isLoading }: Props) {
           {activities.map((activity, i) => (
             <div key={i} className="px-5 py-3 flex items-start gap-3">
               <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-xs font-bold text-primary">
-                {activity.actor_name?.charAt(0) ?? "?"}
+                {activity.actor?.full_name?.charAt(0) ?? "?"}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-700">
-                  <span className="font-medium">{activity.actor_name}</span>{" "}
+                  <span className="font-medium">{activity.actor?.full_name}</span>{" "}
                   {activity.action}{" "}
                   <span className="font-medium">{activity.item_title}</span>
                 </p>

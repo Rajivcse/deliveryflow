@@ -103,6 +103,7 @@ export interface ChangeRequestCreate {
   assigned_to_id?: number;
   source: CRSource;
   priority: Priority;
+  status?: CRStatus;
 }
 
 // Product Update
@@ -130,6 +131,7 @@ export interface ProductUpdateCreate {
   assigned_to_id?: number;
   start_date?: string;
   planned_release_date?: string;
+  status?: ProductUpdateStatus;
 }
 
 // Notifications
@@ -200,7 +202,37 @@ export interface PaginatedResponse<T> {
 }
 
 // Search
+export interface SearchResultBase {
+  id: number;
+  item_type: ItemType;
+  title: string;
+  status: string;
+  last_updated_at: string;
+  created_at: string;
+  assigned_to_name?: string;
+  venue_name?: string;
+  product?: string;
+}
+
+export interface ImplementationSearchResult extends SearchResultBase {
+  item_type: "implementation";
+  iwo_number: string;
+  venue_name: string;
+}
+
+export interface ChangeRequestSearchResult extends SearchResultBase {
+  item_type: "change_request";
+  cr_number: string;
+  priority: string;
+}
+
+export interface ProductUpdateSearchResult extends SearchResultBase {
+  item_type: "product_update";
+  product: string;
+  version_number?: string;
+}
+
 export type SearchResultItem =
-  | (VenueImplementation & { item_type: "implementation" })
-  | (ChangeRequest & { item_type: "change_request" })
-  | (ProductUpdate & { item_type: "product_update" });
+  | ImplementationSearchResult
+  | ChangeRequestSearchResult
+  | ProductUpdateSearchResult;

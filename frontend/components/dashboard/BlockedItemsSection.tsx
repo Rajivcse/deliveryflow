@@ -38,7 +38,7 @@ export function BlockedItemsSection({ items, isLoading }: Props) {
                   {item.item_type.replace(/_/g, " ")} · {item.venue_name || "—"} · Last updated {formatDate(item.last_updated_at)}
                 </p>
               </div>
-              <span className="text-xs text-muted-foreground">{item.assigned_to_name || "Unassigned"}</span>
+              <span className="text-xs text-muted-foreground">{item.assigned_to?.full_name || "Unassigned"}</span>
             </Link>
           ))}
         </div>

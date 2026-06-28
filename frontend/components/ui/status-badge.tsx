@@ -33,8 +33,8 @@ const STATUS_VARIANT: Record<string, string> = {
   planned: "planned",
 };
 
-export function StatusBadge({ status }: { status: AnyStatus }) {
+export function StatusBadge({ status, className }: { status: AnyStatus | string; className?: string }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const variant = (STATUS_VARIANT[status] || "default") as any;
-  return <Badge variant={variant}>{STATUS_LABELS[status] || status}</Badge>;
+  return <Badge variant={variant} className={className}>{STATUS_LABELS[status] || status}</Badge>;
 }
