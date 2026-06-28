@@ -44,6 +44,7 @@ export function ChangeRequestForm({ defaultValues, onSuccess }: ChangeRequestFor
   const [source, setSource] = useState<CRSource>(defaultValues?.source ?? "venue_request");
   const [priority, setPriority] = useState<Priority>(defaultValues?.priority ?? "medium");
   const [status, setStatus] = useState<CRStatus>(defaultValues?.status ?? "new");
+  const [notes, setNotes] = useState(defaultValues?.notes ?? "");
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +63,7 @@ export function ChangeRequestForm({ defaultValues, onSuccess }: ChangeRequestFor
       priority,
       ...(venueName.trim() ? { venue_name: venueName.trim() } : {}),
       ...(assignedToId.trim() ? { assigned_to_id: Number(assignedToId) } : {}),
+      ...(notes.trim() ? { notes: notes.trim() } : {}),
     };
 
     try {
@@ -212,6 +214,19 @@ export function ChangeRequestForm({ defaultValues, onSuccess }: ChangeRequestFor
               </Select>
             </div>
           )}
+
+          {/* Notes */}
+          <div className="space-y-1.5">
+            <Label htmlFor="notes">Notes / Reason</Label>
+            <textarea
+              id="notes"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+              placeholder="Add any notes, blockers, or context..."
+              rows={3}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
 
           <div className="flex gap-3 pt-2">
             <Button type="submit" disabled={isLoading}>

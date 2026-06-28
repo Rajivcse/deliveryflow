@@ -120,6 +120,7 @@ async def update_product_update_status(
         item_id=item_id,
         new_status=payload.status,
         current_user=current_user,
+        notes=payload.notes,
     )
     if item is None:
         raise HTTPException(status_code=404, detail="Product update not found")

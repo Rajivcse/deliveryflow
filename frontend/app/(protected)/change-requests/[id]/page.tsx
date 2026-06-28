@@ -2,18 +2,37 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PriorityBadge } from "@/components/ui/priority-badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { changeRequestsApi } from "@/lib/api/change-requests";
 import { formatDate, formatDateTime } from "@/lib/utils";
-import type { ChangeRequest, Comment } from "@/types";
+import type { ChangeRequest, CRStatus, Comment } from "@/types";
 
 const SOURCE_LABELS: Record<string, string> = {
   venue_request: "Venue Request",
   support_team_request: "Support Team Request",
 };
+
+const STATUSES: { value: CRStatus; label: string }[] = [
+  { value: "new", label: "New" },
+  { value: "analysis", label: "Analysis" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "testing", label: "Testing" },
+  { value: "waiting_for_review", label: "Waiting for Review" },
+  { value: "blocked", label: "Blocked" },
+  { value: "completed", label: "Completed" },
+  { value: "delayed", label: "Delayed" },
+];
 
 export default function ChangeRequestDetailPage() {
   const params = useParams();
@@ -28,6 +47,13 @@ export default function ChangeRequestDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [commentError, setCommentError] = useState<string | null>(null);
 
+  // Status update panel
+  const [newStatus, setNewStatus] = useState<CRStatus | "">("");
+  const [statusNotes, setStatusNotes] = useState("");
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [statusError, setStatusError] = useState("");
+  const [statusSuccess, setStatusSuccess] = useState(false);
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -37,6 +63,8 @@ export default function ChangeRequestDetailPage() {
         ]);
         setCr(crData);
         setComments(commentsData);
+        setNewStatus(crData.status);
+        setStatusNotes(crData.notes ?? "");
       } catch {
         setError("Failed to load change request.");
       } finally {
@@ -45,6 +73,25 @@ export default function ChangeRequestDetailPage() {
     };
     if (!isNaN(id)) load();
   }, [id]);
+
+  const handleStatusUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStatus) return;
+    setIsUpdatingStatus(true);
+    setStatusError("");
+    setStatusSuccess(false);
+    try {
+      const updated = await changeRequestsApi.updateStatus(id, newStatus, statusNotes.trim() || undefined);
+      setCr(updated);
+      setStatusNotes(updated.notes ?? "");
+      setStatusSuccess(true);
+      setTimeout(() => setStatusSuccess(false), 3000);
+    } catch {
+      setStatusError("Failed to update status. Please try again.");
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
 
   const handleAddComment = async () => {
     if (!commentBody.trim()) return;
@@ -138,6 +185,61 @@ export default function ChangeRequestDetailPage() {
               <dd className="mt-0.5">{formatDateTime(cr.last_updated_at)}</dd>
             </div>
           </dl>
+          {cr.notes && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <dt className="text-muted-foreground font-medium text-sm mb-1">Notes / Reason</dt>
+              <dd className="text-sm whitespace-pre-wrap">{cr.notes}</dd>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Update Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Update Status
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleStatusUpdate} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">New Status</label>
+              <Select value={newStatus} onValueChange={(v) => setNewStatus(v as CRStatus)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUSES.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">
+                Notes / Reason
+                <span className="text-muted-foreground font-normal ml-1">(optional — required if blocked)</span>
+              </label>
+              <textarea
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                placeholder="Describe the current situation, blockers, or reason for status change..."
+                rows={3}
+                value={statusNotes}
+                onChange={(e) => setStatusNotes(e.target.value)}
+              />
+            </div>
+            {statusError && <p className="text-destructive text-sm">{statusError}</p>}
+            {statusSuccess && (
+              <p className="text-green-600 text-sm font-medium">Status updated successfully.</p>
+            )}
+            <Button type="submit" disabled={isUpdatingStatus || !newStatus}>
+              {isUpdatingStatus ? "Updating..." : "Update Status"}
+            </Button>
+          </form>
         </CardContent>
       </Card>
 
@@ -190,7 +292,6 @@ export default function ChangeRequestDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Back link */}
       <Link
         href="/change-requests"
         className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"

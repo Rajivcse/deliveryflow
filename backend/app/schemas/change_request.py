@@ -15,6 +15,7 @@ class ChangeRequestBase(BaseModel):
     assigned_to_id: Optional[int] = None
     source: CRSource
     priority: Priority
+    notes: Optional[str] = None
 
 
 class ChangeRequestCreate(ChangeRequestBase):
@@ -29,10 +30,12 @@ class ChangeRequestUpdate(BaseModel):
     assigned_to_id: Optional[int] = None
     source: Optional[CRSource] = None
     priority: Optional[Priority] = None
+    notes: Optional[str] = None
 
 
 class CRStatusUpdate(BaseModel):
     status: CRStatus
+    notes: Optional[str] = None
 
 
 class ChangeRequestResponse(BaseModel):
@@ -49,6 +52,7 @@ class ChangeRequestResponse(BaseModel):
     source: CRSource
     priority: Priority
     status: CRStatus
+    notes: Optional[str] = None
     last_updated_at: datetime
     created_at: datetime
 

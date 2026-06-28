@@ -14,6 +14,7 @@ class ImplementationBase(BaseModel):
     assigned_to_id: Optional[int] = None
     start_date: Optional[date] = None
     target_date: Optional[date] = None
+    notes: Optional[str] = None
 
 
 class ImplementationCreate(ImplementationBase):
@@ -26,10 +27,12 @@ class ImplementationUpdate(BaseModel):
     assigned_to_id: Optional[int] = None
     start_date: Optional[date] = None
     target_date: Optional[date] = None
+    notes: Optional[str] = None
 
 
 class StatusUpdate(BaseModel):
     status: ImplementationStatus
+    notes: Optional[str] = None
 
 
 class ImplementationResponse(BaseModel):
@@ -44,6 +47,7 @@ class ImplementationResponse(BaseModel):
     start_date: Optional[date]
     target_date: Optional[date]
     status: ImplementationStatus
+    notes: Optional[str] = None
     last_updated_at: datetime
     created_at: datetime
     attention_required: bool = False  # computed field, not from DB

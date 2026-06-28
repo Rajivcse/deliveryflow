@@ -107,6 +107,7 @@ async def update_change_request_status(
             item_id=item_id,
             new_status=data.status,
             current_user=current_user,
+            notes=data.notes,
         )
     except NotFoundError:
         raise HTTPException(status_code=404, detail="Change request not found")

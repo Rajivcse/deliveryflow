@@ -106,7 +106,7 @@ async def update_status(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(require_role("delivery_manager", "admin")),
 ):
-    item = await implementation_service.update_status(db, item_id, data.status, current_user)
+    item = await implementation_service.update_status(db, item_id, data.status, current_user, data.notes)
     return ImplementationResponse.model_validate(item)
 
 

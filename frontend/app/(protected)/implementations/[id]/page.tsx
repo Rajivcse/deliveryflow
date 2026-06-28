@@ -2,14 +2,30 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { AlertTriangle, MessageSquare } from "lucide-react";
+import { AlertTriangle, MessageSquare, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { StatusBadge } from "@/components/ui/status-badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { implementationsApi } from "@/lib/api/implementations";
 import { formatDate, formatDateTime } from "@/lib/utils";
-import type { VenueImplementation, Comment } from "@/types";
+import type { VenueImplementation, ImplementationStatus, Comment } from "@/types";
+
+const STATUSES: { value: ImplementationStatus; label: string }[] = [
+  { value: "not_started", label: "Not Started" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "waiting_for_venue", label: "Waiting for Venue" },
+  { value: "waiting_for_internal_team", label: "Waiting – Internal" },
+  { value: "blocked", label: "Blocked" },
+  { value: "completed", label: "Completed" },
+];
 
 export default function ImplementationDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +38,13 @@ export default function ImplementationDetailPage() {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [commentError, setCommentError] = useState("");
 
+  // Status update panel state
+  const [newStatus, setNewStatus] = useState<ImplementationStatus | "">("");
+  const [statusNotes, setStatusNotes] = useState("");
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [statusError, setStatusError] = useState("");
+  const [statusSuccess, setStatusSuccess] = useState(false);
+
   useEffect(() => {
     async function load() {
       setIsLoading(true);
@@ -32,6 +55,8 @@ export default function ImplementationDetailPage() {
         ]);
         setImplementation(impl);
         setComments(cmts);
+        setNewStatus(impl.status);
+        setStatusNotes(impl.notes ?? "");
       } catch (err) {
         console.error(err);
       } finally {
@@ -40,6 +65,29 @@ export default function ImplementationDetailPage() {
     }
     load();
   }, [numericId]);
+
+  const handleStatusUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStatus) return;
+    setIsUpdatingStatus(true);
+    setStatusError("");
+    setStatusSuccess(false);
+    try {
+      const updated = await implementationsApi.updateStatus(
+        numericId,
+        newStatus,
+        statusNotes.trim() || undefined
+      );
+      setImplementation(updated);
+      setStatusNotes(updated.notes ?? "");
+      setStatusSuccess(true);
+      setTimeout(() => setStatusSuccess(false), 3000);
+    } catch {
+      setStatusError("Failed to update status. Please try again.");
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
 
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,8 +98,7 @@ export default function ImplementationDetailPage() {
       const newComment = await implementationsApi.addComment(numericId, commentBody.trim());
       setComments((prev) => [...prev, newComment]);
       setCommentBody("");
-    } catch (err) {
-      console.error(err);
+    } catch {
       setCommentError("Failed to post comment. Please try again.");
     } finally {
       setIsSubmittingComment(false);
@@ -143,6 +190,64 @@ export default function ImplementationDetailPage() {
               <p>{formatDateTime(implementation.created_at)}</p>
             </div>
           </div>
+          {implementation.notes && (
+            <div className="pt-2 border-t border-border">
+              <p className="text-muted-foreground font-medium text-sm mb-1">Notes / Reason</p>
+              <p className="text-sm whitespace-pre-wrap">{implementation.notes}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Update Status panel */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Update Status
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleStatusUpdate} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">New Status</label>
+              <Select
+                value={newStatus}
+                onValueChange={(v) => setNewStatus(v as ImplementationStatus)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUSES.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">
+                Notes / Reason
+                <span className="text-muted-foreground font-normal ml-1">(optional — required if blocked)</span>
+              </label>
+              <textarea
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                placeholder="Describe the current situation, blockers, or reason for status change..."
+                rows={3}
+                value={statusNotes}
+                onChange={(e) => setStatusNotes(e.target.value)}
+              />
+            </div>
+            {statusError && <p className="text-destructive text-sm">{statusError}</p>}
+            {statusSuccess && (
+              <p className="text-green-600 text-sm font-medium">Status updated successfully.</p>
+            )}
+            <Button type="submit" disabled={isUpdatingStatus || !newStatus}>
+              {isUpdatingStatus ? "Updating..." : "Update Status"}
+            </Button>
+          </form>
         </CardContent>
       </Card>
 

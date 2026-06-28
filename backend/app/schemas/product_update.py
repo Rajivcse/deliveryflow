@@ -13,6 +13,7 @@ class ProductUpdateBase(BaseModel):
     assigned_to_id: Optional[int] = None
     start_date: Optional[date] = None
     planned_release_date: Optional[date] = None
+    notes: Optional[str] = None
 
 
 class ProductUpdateCreate(ProductUpdateBase):
@@ -26,10 +27,12 @@ class ProductUpdateUpdate(BaseModel):
     assigned_to_id: Optional[int] = None
     start_date: Optional[date] = None
     planned_release_date: Optional[date] = None
+    notes: Optional[str] = None
 
 
 class ProductUpdateStatusUpdate(BaseModel):
     status: ProductUpdateStatus
+    notes: Optional[str] = None
 
 
 class ProductUpdateResponse(BaseModel):
@@ -44,6 +47,7 @@ class ProductUpdateResponse(BaseModel):
     start_date: Optional[date] = None
     planned_release_date: Optional[date] = None
     status: ProductUpdateStatus
+    notes: Optional[str] = None
     last_updated_at: datetime
     created_at: datetime
     approaching_release: bool = False

@@ -63,6 +63,7 @@ class ChangeRequest(Base):
     status: Mapped[CRStatus] = mapped_column(
         Enum(CRStatus, name="crstatus"), nullable=False, default=CRStatus.new
     )
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     last_updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), index=True, nullable=False
     )

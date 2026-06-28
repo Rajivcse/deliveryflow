@@ -121,6 +121,7 @@ async def create(
         created_by_id=created_by_id,
         start_date=data.start_date,
         planned_release_date=data.planned_release_date,
+        notes=data.notes,
         last_updated_at=now,
     )
     db.add(item)
@@ -179,6 +180,7 @@ async def update_status(
     item_id: int,
     new_status: ProductUpdateStatus,
     current_user,
+    notes: Optional[str] = None,
 ) -> Optional[ProductUpdate]:
     """Update the status field and notify the assignee when blocked."""
     item = await get_by_id(db, item_id)
@@ -186,6 +188,8 @@ async def update_status(
         return None
 
     item.status = new_status
+    if notes is not None:
+        item.notes = notes
     item.last_updated_at = datetime.now(tz=timezone.utc)
 
     if new_status == ProductUpdateStatus.blocked and item.assigned_to_id:

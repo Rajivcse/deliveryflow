@@ -58,6 +58,7 @@ export interface VenueImplementation {
   start_date: string | null;
   target_date: string | null;
   status: ImplementationStatus;
+  notes: string | null;
   last_updated_at: string;
   created_at: string;
   attention_required?: boolean;
@@ -73,6 +74,7 @@ export interface VenueImplementationCreate {
   start_date?: string;
   target_date?: string;
   status?: ImplementationStatus;
+  notes?: string;
 }
 
 // Change Request
@@ -88,6 +90,7 @@ export interface ChangeRequest {
   source: CRSource;
   priority: Priority;
   status: CRStatus;
+  notes: string | null;
   last_updated_at: string;
   created_at: string;
   assigned_to?: User;
@@ -104,6 +107,7 @@ export interface ChangeRequestCreate {
   source: CRSource;
   priority: Priority;
   status?: CRStatus;
+  notes?: string;
 }
 
 // Product Update
@@ -117,6 +121,7 @@ export interface ProductUpdate {
   start_date: string | null;
   planned_release_date: string | null;
   status: ProductUpdateStatus;
+  notes: string | null;
   last_updated_at: string;
   created_at: string;
   approaching_release?: boolean;
@@ -132,6 +137,7 @@ export interface ProductUpdateCreate {
   start_date?: string;
   planned_release_date?: string;
   status?: ProductUpdateStatus;
+  notes?: string;
 }
 
 // Notifications

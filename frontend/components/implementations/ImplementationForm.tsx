@@ -37,6 +37,7 @@ type FormState = {
   start_date: string;
   target_date: string;
   status: ImplementationStatus;
+  notes: string;
 };
 
 export function ImplementationForm({ defaultValues, id, onSuccess }: Props) {
@@ -47,6 +48,7 @@ export function ImplementationForm({ defaultValues, id, onSuccess }: Props) {
     start_date: defaultValues?.start_date ?? "",
     target_date: defaultValues?.target_date ?? "",
     status: defaultValues?.status ?? "not_started",
+    notes: defaultValues?.notes ?? "",
   });
 
   const [products, setProducts] = useState<string[]>(
@@ -81,6 +83,7 @@ export function ImplementationForm({ defaultValues, id, onSuccess }: Props) {
         start_date: form.start_date || undefined,
         target_date: form.target_date || undefined,
         status: form.status,
+        notes: form.notes.trim() || undefined,
       };
       if (id) {
         await implementationsApi.update(id, payload);
@@ -201,6 +204,18 @@ export function ImplementationForm({ defaultValues, id, onSuccess }: Props) {
               </Select>
             </div>
           )}
+
+          <div className="space-y-1.5">
+            <Label htmlFor="notes">Notes / Reason</Label>
+            <textarea
+              id="notes"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+              placeholder="Add any notes, blockers, or context..."
+              rows={3}
+              value={form.notes}
+              onChange={(e) => handleChange("notes", e.target.value)}
+            />
+          </div>
 
           {error && <p className="text-destructive text-sm">{error}</p>}
 

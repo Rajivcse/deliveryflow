@@ -162,12 +162,15 @@ async def update_status(
     item_id: int,
     new_status: CRStatus,
     current_user,
+    notes: Optional[str] = None,
 ) -> ChangeRequest:
     item = await get_by_id(db, item_id)
     if item is None:
         raise NotFoundError("ChangeRequest")
 
     item.status = new_status
+    if notes is not None:
+        item.notes = notes
     item.last_updated_at = datetime.now(timezone.utc)
 
     if item.assigned_to_id:

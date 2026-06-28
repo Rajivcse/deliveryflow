@@ -51,6 +51,7 @@ export function ProductUpdateForm({ defaultValues, onSuccess }: ProductUpdateFor
   const [status, setStatus] = useState<ProductUpdateStatus>(
     defaultValues?.status ?? "planned"
   );
+  const [notes, setNotes] = useState(defaultValues?.notes ?? "");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +76,7 @@ export function ProductUpdateForm({ defaultValues, onSuccess }: ProductUpdateFor
       ...(assignedToId ? { assigned_to_id: Number(assignedToId) } : {}),
       ...(startDate ? { start_date: startDate } : {}),
       ...(plannedReleaseDate ? { planned_release_date: plannedReleaseDate } : {}),
+      ...(notes.trim() ? { notes: notes.trim() } : {}),
     };
 
     setIsSubmitting(true);
@@ -201,6 +203,19 @@ export function ProductUpdateForm({ defaultValues, onSuccess }: ProductUpdateFor
               </Select>
             </div>
           )}
+
+          {/* Notes */}
+          <div className="space-y-1.5">
+            <Label htmlFor="notes">Notes / Reason</Label>
+            <textarea
+              id="notes"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+              placeholder="Add any notes, blockers, or context..."
+              rows={3}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
 
           {error && (
             <p className="text-sm text-destructive">{error}</p>

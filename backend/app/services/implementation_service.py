@@ -116,6 +116,7 @@ async def create(
         start_date=data.start_date,
         target_date=data.target_date,
         status=data.status,
+        notes=data.notes,
         last_updated_at=datetime.now(timezone.utc),
     )
     db.add(item)
@@ -169,6 +170,8 @@ async def update(
         item.start_date = data.start_date
     if data.target_date is not None:
         item.target_date = data.target_date
+    if data.notes is not None:
+        item.notes = data.notes
 
     item.last_updated_at = datetime.now(timezone.utc)
     await db.flush()
@@ -202,6 +205,7 @@ async def update_status(
     item_id: int,
     new_status: ImplementationStatus,
     current_user,
+    notes: Optional[str] = None,
 ) -> VenueImplementation:
     result = await db.execute(
         select(VenueImplementation).where(VenueImplementation.id == item_id)
@@ -211,6 +215,8 @@ async def update_status(
         raise NotFoundError("Implementation")
 
     item.status = new_status
+    if notes is not None:
+        item.notes = notes
     item.last_updated_at = datetime.now(timezone.utc)
     await db.flush()
     await db.refresh(item)
