@@ -13,6 +13,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { implementationsApi } from "@/lib/api/implementations";
 import type { VenueImplementation, ImplementationStatus } from "@/types";
+import { X, Plus } from "lucide-react";
 
 interface Props {
   defaultValues?: Partial<VenueImplementation>;
@@ -29,19 +30,9 @@ const STATUSES: { value: ImplementationStatus; label: string }[] = [
   { value: "completed", label: "Completed" },
 ];
 
-const TEXT_FIELDS = [
-  { name: "iwo_number", label: "IWO Number", required: true, type: "text" },
-  { name: "venue_name", label: "Venue Name", required: true, type: "text" },
-  { name: "product_name", label: "Product Name", required: true, type: "text" },
-  { name: "assigned_to_id", label: "Assigned To (User ID)", required: false, type: "number" },
-  { name: "start_date", label: "Start Date", required: false, type: "date" },
-  { name: "target_date", label: "Target Date", required: false, type: "date" },
-] as const;
-
 type FormState = {
   iwo_number: string;
   venue_name: string;
-  product_name: string;
   assigned_to_id: string;
   start_date: string;
   target_date: string;
@@ -52,12 +43,18 @@ export function ImplementationForm({ defaultValues, id, onSuccess }: Props) {
   const [form, setForm] = useState<FormState>({
     iwo_number: defaultValues?.iwo_number ?? "",
     venue_name: defaultValues?.venue_name ?? "",
-    product_name: defaultValues?.product_name ?? "",
     assigned_to_id: defaultValues?.assigned_to_id?.toString() ?? "",
     start_date: defaultValues?.start_date ?? "",
     target_date: defaultValues?.target_date ?? "",
     status: defaultValues?.status ?? "not_started",
   });
+
+  const [products, setProducts] = useState<string[]>(
+    defaultValues?.product_name
+      ? defaultValues.product_name.split(",").map((p) => p.trim()).filter(Boolean)
+      : [""]
+  );
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -65,15 +62,21 @@ export function ImplementationForm({ defaultValues, id, onSuccess }: Props) {
     setForm((f) => ({ ...f, [name]: value }));
   };
 
+  const addProduct = () => setProducts((p) => [...p, ""]);
+  const removeProduct = (i: number) => setProducts((p) => p.filter((_, idx) => idx !== i));
+  const updateProduct = (i: number, val: string) =>
+    setProducts((p) => p.map((v, idx) => (idx === i ? val : v)));
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
     try {
+      const productName = products.filter(Boolean).join(", ");
       const payload = {
         iwo_number: form.iwo_number,
         venue_name: form.venue_name,
-        product_name: form.product_name,
+        product_name: productName,
         assigned_to_id: form.assigned_to_id ? parseInt(form.assigned_to_id, 10) : undefined,
         start_date: form.start_date || undefined,
         target_date: form.target_date || undefined,
@@ -97,30 +100,94 @@ export function ImplementationForm({ defaultValues, id, onSuccess }: Props) {
     <Card>
       <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-4">
-          {TEXT_FIELDS.map((field) => (
-            <div key={field.name} className="space-y-1.5">
-              <Label htmlFor={field.name}>
-                {field.label}
-                {field.required && " *"}
-              </Label>
-              <Input
-                id={field.name}
-                type={field.type}
-                value={form[field.name]}
-                onChange={(e) => handleChange(field.name, e.target.value)}
-                required={field.required}
-              />
-            </div>
-          ))}
+          <div className="space-y-1.5">
+            <Label htmlFor="iwo_number">IWO Number *</Label>
+            <Input
+              id="iwo_number"
+              value={form.iwo_number}
+              onChange={(e) => handleChange("iwo_number", e.target.value)}
+              required
+            />
+          </div>
 
-          {/* Status — only shown when editing */}
+          <div className="space-y-1.5">
+            <Label htmlFor="venue_name">Venue Name *</Label>
+            <Input
+              id="venue_name"
+              value={form.venue_name}
+              onChange={(e) => handleChange("venue_name", e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Multi-product input */}
+          <div className="space-y-1.5">
+            <Label>Product Name(s) *</Label>
+            <div className="space-y-2">
+              {products.map((product, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <Input
+                    value={product}
+                    onChange={(e) => updateProduct(i, e.target.value)}
+                    placeholder={`Product ${i + 1}`}
+                    required={i === 0}
+                  />
+                  {products.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeProduct(i)}
+                      className="text-muted-foreground hover:text-destructive transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addProduct}
+                className="flex items-center gap-1.5 text-sm text-primary hover:underline"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add another product
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="assigned_to_id">Assigned To (User ID)</Label>
+            <Input
+              id="assigned_to_id"
+              type="number"
+              value={form.assigned_to_id}
+              onChange={(e) => handleChange("assigned_to_id", e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="start_date">Start Date</Label>
+            <Input
+              id="start_date"
+              type="date"
+              value={form.start_date}
+              onChange={(e) => handleChange("start_date", e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="target_date">Target Date</Label>
+            <Input
+              id="target_date"
+              type="date"
+              value={form.target_date}
+              onChange={(e) => handleChange("target_date", e.target.value)}
+            />
+          </div>
+
           {id && (
             <div className="space-y-1.5">
               <Label htmlFor="status">Status</Label>
-              <Select
-                value={form.status}
-                onValueChange={(v) => handleChange("status", v)}
-              >
+              <Select value={form.status} onValueChange={(v) => handleChange("status", v)}>
                 <SelectTrigger id="status">
                   <SelectValue />
                 </SelectTrigger>
