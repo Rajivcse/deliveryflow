@@ -30,6 +30,7 @@ class ChangeRequestUpdate(BaseModel):
     assigned_to_id: Optional[int] = None
     source: Optional[CRSource] = None
     priority: Optional[Priority] = None
+    status: Optional[CRStatus] = None
     notes: Optional[str] = None
 
 

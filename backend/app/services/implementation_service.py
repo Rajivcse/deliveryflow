@@ -170,6 +170,8 @@ async def update(
         item.start_date = data.start_date
     if data.target_date is not None:
         item.target_date = data.target_date
+    if data.status is not None:
+        item.status = data.status
     if data.notes is not None:
         item.notes = data.notes
 

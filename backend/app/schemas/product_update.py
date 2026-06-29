@@ -27,6 +27,7 @@ class ProductUpdateUpdate(BaseModel):
     assigned_to_id: Optional[int] = None
     start_date: Optional[date] = None
     planned_release_date: Optional[date] = None
+    status: Optional[ProductUpdateStatus] = None
     notes: Optional[str] = None
 
 

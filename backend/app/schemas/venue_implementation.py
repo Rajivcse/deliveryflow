@@ -27,6 +27,7 @@ class ImplementationUpdate(BaseModel):
     assigned_to_id: Optional[int] = None
     start_date: Optional[date] = None
     target_date: Optional[date] = None
+    status: Optional[ImplementationStatus] = None
     notes: Optional[str] = None
 
 

@@ -55,7 +55,7 @@ async def health():
     return {"status": "ok", "service": "deliveryflow-api"}
 
 
-from app.routers import auth, implementations, change_requests, product_updates, dashboard, search, reports
+from app.routers import auth, implementations, change_requests, product_updates, dashboard, search, reports, users
 
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(implementations.router, prefix="/api/v1")
@@ -64,3 +64,4 @@ app.include_router(product_updates.router, prefix="/api/v1")
 app.include_router(dashboard.router, prefix="/api/v1")
 app.include_router(search.router, prefix="/api/v1")
 app.include_router(reports.router, prefix="/api/v1")
+app.include_router(users.router, prefix="/api/v1")

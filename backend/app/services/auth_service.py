@@ -29,9 +29,12 @@ async def get_or_create_user(db: AsyncSession, google_user_info: dict) -> User:
         )
         db.add(user)
     else:
+        if not user.is_active:
+            raise UnauthorizedError("Account is inactive. Contact your administrator.")
         if user.avatar_url != avatar_url:
             user.avatar_url = avatar_url
 
+    user.last_login = datetime.now(timezone.utc)
     await db.flush()
     await db.refresh(user)
     return user
