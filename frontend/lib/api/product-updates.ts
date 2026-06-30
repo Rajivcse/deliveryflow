@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import type { ProductUpdate, ProductUpdateCreate, ProductUpdateStatus, PaginatedResponse, Comment } from "@/types";
+import type { ProductUpdate, ProductUpdateCreate, ProductUpdateStatus, PaginatedResponse, Comment, StatusHistoryEntry } from "@/types";
 
 export interface ProductUpdateFilters {
   status?: string;
@@ -47,6 +47,10 @@ export const productUpdatesApi = {
 
   addComment: async (id: number, body: string): Promise<Comment> => {
     const { data } = await api.post(`/product-updates/${id}/comments`, { body });
+    return data;
+  },
+  getStatusHistory: async (id: number): Promise<StatusHistoryEntry[]> => {
+    const { data } = await api.get(`/product-updates/${id}/status-history`);
     return data;
   },
 };

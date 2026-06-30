@@ -216,12 +216,26 @@ async def update_status(
     if not item:
         raise NotFoundError("Implementation")
 
+    old_status = item.status.value
+
     item.status = new_status
     if notes is not None:
         item.notes = notes
     item.last_updated_at = datetime.now(timezone.utc)
     await db.flush()
     await db.refresh(item)
+
+    from app.services import status_history_service  # noqa: PLC0415
+
+    await status_history_service.record(
+        db,
+        item_type="implementation",
+        item_id=item.id,
+        old_status=old_status,
+        new_status=new_status.value,
+        changed_by_id=current_user.id,
+        notes=notes,
+    )
 
     if new_status == ImplementationStatus.blocked and item.assigned_to_id:
         try:

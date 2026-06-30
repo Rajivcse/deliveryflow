@@ -168,6 +168,8 @@ async def update_status(
     if item is None:
         raise NotFoundError("ChangeRequest")
 
+    old_status = item.status.value
+
     item.status = new_status
     if notes is not None:
         item.notes = notes
@@ -195,6 +197,19 @@ async def update_status(
 
     await db.flush()
     await db.refresh(item)
+
+    from app.services import status_history_service  # noqa: PLC0415
+
+    await status_history_service.record(
+        db,
+        item_type="change_request",
+        item_id=item.id,
+        old_status=old_status,
+        new_status=new_status.value,
+        changed_by_id=current_user.id,
+        notes=notes,
+    )
+
     return item
 
 

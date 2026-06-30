@@ -18,7 +18,8 @@ from app.schemas.change_request import (
     CRStatusUpdate,
 )
 from app.schemas.common import PaginatedResponse
-from app.services import change_request_service as cr_service
+from app.schemas.status_history import StatusHistoryResponse
+from app.services import change_request_service as cr_service, status_history_service
 
 logger = logging.getLogger(__name__)
 
@@ -160,3 +161,13 @@ async def list_comments(
         raise HTTPException(status_code=404, detail="Change request not found")
     comments = await cr_service.get_comments(db=db, item_id=item_id)
     return comments
+
+
+@router.get("/{item_id}/status-history", response_model=List[StatusHistoryResponse])
+async def get_status_history(
+    item_id: int,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    entries = await status_history_service.get_history(db, "change_request", item_id)
+    return [StatusHistoryResponse.model_validate(e) for e in entries]

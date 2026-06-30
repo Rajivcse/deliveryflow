@@ -14,9 +14,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { StatusHistoryTimeline } from "@/components/ui/status-history-timeline";
 import { changeRequestsApi } from "@/lib/api/change-requests";
 import { formatDate, formatDateTime } from "@/lib/utils";
-import type { ChangeRequest, CRStatus, Comment } from "@/types";
+import type { ChangeRequest, CRStatus, Comment, StatusHistoryEntry } from "@/types";
 
 const SOURCE_LABELS: Record<string, string> = {
   venue_request: "Venue Request",
@@ -40,6 +41,7 @@ export default function ChangeRequestDetailPage() {
 
   const [cr, setCr] = useState<ChangeRequest | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [statusHistory, setStatusHistory] = useState<StatusHistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,12 +59,14 @@ export default function ChangeRequestDetailPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [crData, commentsData] = await Promise.all([
+        const [crData, commentsData, historyData] = await Promise.all([
           changeRequestsApi.get(id),
           changeRequestsApi.getComments(id),
+          changeRequestsApi.getStatusHistory(id),
         ]);
         setCr(crData);
         setComments(commentsData);
+        setStatusHistory(historyData);
         setNewStatus(crData.status);
         setStatusNotes(crData.notes ?? "");
       } catch {
@@ -84,6 +88,8 @@ export default function ChangeRequestDetailPage() {
       const updated = await changeRequestsApi.updateStatus(id, newStatus, statusNotes.trim() || undefined);
       setCr(updated);
       setStatusNotes(updated.notes ?? "");
+      const updatedHistory = await changeRequestsApi.getStatusHistory(id);
+      setStatusHistory(updatedHistory);
       setStatusSuccess(true);
       setTimeout(() => setStatusSuccess(false), 3000);
     } catch {
@@ -242,6 +248,9 @@ export default function ChangeRequestDetailPage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Status History */}
+      <StatusHistoryTimeline entries={statusHistory} />
 
       {/* Comments */}
       <Card>

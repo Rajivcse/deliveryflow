@@ -9,6 +9,7 @@ from app.config import settings
 from app.database import get_db
 from app.dependencies import get_current_user, require_role
 from app.schemas.common import PaginatedResponse
+from app.schemas.status_history import StatusHistoryResponse
 from app.schemas.venue_implementation import (
     CommentCreate,
     CommentResponse,
@@ -17,7 +18,7 @@ from app.schemas.venue_implementation import (
     ImplementationUpdate,
     StatusUpdate,
 )
-from app.services import implementation_service
+from app.services import implementation_service, status_history_service
 
 logger = logging.getLogger(__name__)
 
@@ -140,3 +141,13 @@ async def get_comments(
 ):
     comments = await implementation_service.get_comments(db, item_id)
     return [CommentResponse.model_validate(c) for c in comments]
+
+
+@router.get("/{item_id}/status-history", response_model=list[StatusHistoryResponse])
+async def get_status_history(
+    item_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    entries = await status_history_service.get_history(db, "implementation", item_id)
+    return [StatusHistoryResponse.model_validate(e) for e in entries]

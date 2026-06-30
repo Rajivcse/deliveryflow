@@ -5,6 +5,7 @@ import type {
   CRStatus,
   PaginatedResponse,
   Comment,
+  StatusHistoryEntry,
 } from "@/types";
 
 export interface ChangeRequestFilters {
@@ -72,6 +73,10 @@ export const changeRequestsApi = {
 
   addComment: async (id: number, body: string): Promise<Comment> => {
     const { data } = await api.post<Comment>(`/change-requests/${id}/comments`, { body });
+    return data;
+  },
+  getStatusHistory: async (id: number): Promise<StatusHistoryEntry[]> => {
+    const { data } = await api.get<StatusHistoryEntry[]>(`/change-requests/${id}/status-history`);
     return data;
   },
 };

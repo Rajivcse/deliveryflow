@@ -4,6 +4,7 @@ from app.models.venue_implementation import VenueImplementation, ImplementationC
 from app.models.change_request import ChangeRequest, ChangeRequestComment, CRStatus, CRSource, Priority
 from app.models.product_update import ProductUpdate, ProductUpdateComment, ProductUpdateStatus
 from app.models.notification import Notification, NotificationType, ItemType
+from app.models.status_history import StatusHistory
 
 __all__ = [
     "Base",
@@ -24,4 +25,5 @@ __all__ = [
     "Notification",
     "NotificationType",
     "ItemType",
+    "StatusHistory",
 ]

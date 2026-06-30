@@ -189,6 +189,23 @@ export interface RecentActivity {
   created_at: string;
 }
 
+// Status History
+export interface StatusHistoryEntry {
+  id: number;
+  item_type: ItemType;
+  item_id: number;
+  old_status: string;
+  new_status: string;
+  notes: string | null;
+  changed_by_id: number;
+  changed_at: string;
+  changed_by?: {
+    id: number;
+    full_name: string;
+    avatar_url: string | null;
+  };
+}
+
 // Comments
 export interface Comment {
   id: number;

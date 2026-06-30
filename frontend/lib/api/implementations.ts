@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import type { VenueImplementation, VenueImplementationCreate, PaginatedResponse, Comment } from "@/types";
+import type { VenueImplementation, VenueImplementationCreate, PaginatedResponse, Comment, StatusHistoryEntry } from "@/types";
 
 export interface ImplementationFilters {
   status?: string;
@@ -40,6 +40,10 @@ export const implementationsApi = {
   },
   addComment: async (id: number, body: string): Promise<Comment> => {
     const { data } = await api.post(`/implementations/${id}/comments`, { body });
+    return data;
+  },
+  getStatusHistory: async (id: number): Promise<StatusHistoryEntry[]> => {
+    const { data } = await api.get(`/implementations/${id}/status-history`);
     return data;
   },
 };

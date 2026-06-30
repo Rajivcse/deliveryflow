@@ -15,9 +15,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ApproachingReleaseBanner } from "@/components/product-updates/ApproachingReleaseBanner";
+import { StatusHistoryTimeline } from "@/components/ui/status-history-timeline";
 import { productUpdatesApi } from "@/lib/api/product-updates";
 import { formatDate, formatDateTime } from "@/lib/utils";
-import type { ProductUpdate, ProductUpdateStatus, Comment } from "@/types";
+import type { ProductUpdate, ProductUpdateStatus, Comment, StatusHistoryEntry } from "@/types";
 
 const STATUSES: { value: ProductUpdateStatus; label: string }[] = [
   { value: "planned", label: "Planned" },
@@ -35,6 +36,7 @@ export default function ProductUpdateDetailPage() {
 
   const [update, setUpdate] = useState<ProductUpdate | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [statusHistory, setStatusHistory] = useState<StatusHistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [commentBody, setCommentBody] = useState("");
   const [isPosting, setIsPosting] = useState(false);
@@ -52,12 +54,14 @@ export default function ProductUpdateDetailPage() {
     const load = async () => {
       setIsLoading(true);
       try {
-        const [pu, cmts] = await Promise.all([
+        const [pu, cmts, history] = await Promise.all([
           productUpdatesApi.get(numericId),
           productUpdatesApi.getComments(numericId),
+          productUpdatesApi.getStatusHistory(numericId),
         ]);
         setUpdate(pu);
         setComments(cmts);
+        setStatusHistory(history);
         setNewStatus(pu.status);
         setStatusNotes(pu.notes ?? "");
       } catch {
@@ -83,6 +87,8 @@ export default function ProductUpdateDetailPage() {
       );
       setUpdate(updated);
       setStatusNotes(updated.notes ?? "");
+      const updatedHistory = await productUpdatesApi.getStatusHistory(numericId);
+      setStatusHistory(updatedHistory);
       setStatusSuccess(true);
       setTimeout(() => setStatusSuccess(false), 3000);
     } catch {
@@ -283,6 +289,9 @@ export default function ProductUpdateDetailPage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Status History */}
+      <StatusHistoryTimeline entries={statusHistory} />
 
       {/* Comments */}
       <Card>

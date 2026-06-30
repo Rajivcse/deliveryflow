@@ -14,9 +14,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { StatusHistoryTimeline } from "@/components/ui/status-history-timeline";
 import { implementationsApi } from "@/lib/api/implementations";
 import { formatDate, formatDateTime } from "@/lib/utils";
-import type { VenueImplementation, ImplementationStatus, Comment } from "@/types";
+import type { VenueImplementation, ImplementationStatus, Comment, StatusHistoryEntry } from "@/types";
 
 const STATUSES: { value: ImplementationStatus; label: string }[] = [
   { value: "not_started", label: "Not Started" },
@@ -33,6 +34,7 @@ export default function ImplementationDetailPage() {
 
   const [implementation, setImplementation] = useState<VenueImplementation | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [statusHistory, setStatusHistory] = useState<StatusHistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [commentBody, setCommentBody] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
@@ -49,12 +51,14 @@ export default function ImplementationDetailPage() {
     async function load() {
       setIsLoading(true);
       try {
-        const [impl, cmts] = await Promise.all([
+        const [impl, cmts, history] = await Promise.all([
           implementationsApi.get(numericId),
           implementationsApi.getComments(numericId),
+          implementationsApi.getStatusHistory(numericId),
         ]);
         setImplementation(impl);
         setComments(cmts);
+        setStatusHistory(history);
         setNewStatus(impl.status);
         setStatusNotes(impl.notes ?? "");
       } catch (err) {
@@ -80,6 +84,9 @@ export default function ImplementationDetailPage() {
       );
       setImplementation(updated);
       setStatusNotes(updated.notes ?? "");
+      // Refresh history after a status change
+      const updatedHistory = await implementationsApi.getStatusHistory(numericId);
+      setStatusHistory(updatedHistory);
       setStatusSuccess(true);
       setTimeout(() => setStatusSuccess(false), 3000);
     } catch {
@@ -250,6 +257,9 @@ export default function ImplementationDetailPage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Status History */}
+      <StatusHistoryTimeline entries={statusHistory} />
 
       {/* Comments section */}
       <Card>
