@@ -1,13 +1,13 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict
 
 from app.models.user import UserRole
 
 
 class AdminUserCreate(BaseModel):
-    email: EmailStr
+    email: str
     full_name: str
     role: UserRole = UserRole.delivery_manager
     is_active: bool = True
