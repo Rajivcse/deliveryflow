@@ -37,6 +37,7 @@ app = FastAPI(
     version="1.0.0",
     description="Internal delivery tracking system for Delivery Managers and Product Managers",
     lifespan=lifespan,
+    redirect_slashes=False,
 )
 
 app.add_middleware(
