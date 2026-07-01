@@ -1,7 +1,7 @@
 import hashlib
 from datetime import datetime, timedelta, timezone
 
-from passlib.context import CryptContext
+import bcrypt as _bcrypt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import func
@@ -12,15 +12,13 @@ from app.exceptions import UnauthorizedError
 from app.models.user import RefreshToken, User, UserRole
 from app.schemas.auth import TokenResponse
 
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def hash_password(plain: str) -> str:
-    return _pwd_context.hash(plain)
+    return _bcrypt.hashpw(plain.encode(), _bcrypt.gensalt()).decode()
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return _pwd_context.verify(plain, hashed)
+    return _bcrypt.checkpw(plain.encode(), hashed.encode())
 
 
 async def get_or_create_user(db: AsyncSession, google_user_info: dict) -> User:
