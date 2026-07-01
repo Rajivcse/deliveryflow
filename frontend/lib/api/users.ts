@@ -17,6 +17,7 @@ export interface AdminUser {
 export interface AdminUserCreate {
   email: string;
   full_name: string;
+  password?: string;
   role: UserRole;
   is_active: boolean;
 }

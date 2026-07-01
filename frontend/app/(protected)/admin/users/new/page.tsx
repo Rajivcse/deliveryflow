@@ -25,7 +25,7 @@ export default function NewUserPage() {
         <div>
           <h1 className="text-2xl font-bold">Add User</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
-            Pre-register a user — they sign in with their Google account.
+            Create a user account with optional password or Google sign-in.
           </p>
         </div>
       </div>

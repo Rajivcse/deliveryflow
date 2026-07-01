@@ -1,12 +1,21 @@
 "use client";
 import { motion } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import api from "@/lib/api";
 
 export default function LoginPage() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, setTokens } = useAuth();
   const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [formLoading, setFormLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!isLoading && user) router.replace("/dashboard");
@@ -14,6 +23,23 @@ export default function LoginPage() {
 
   const handleGoogleLogin = () => {
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/google`;
+  };
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password) return;
+    setFormLoading(true);
+    setError("");
+    try {
+      const { data } = await api.post("/auth/login", { email: email.trim(), password });
+      setTokens(data.access_token, data.refresh_token);
+      router.replace("/dashboard");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } } };
+      setError(e?.response?.data?.detail ?? "Invalid email or password.");
+    } finally {
+      setFormLoading(false);
+    }
   };
 
   return (
@@ -38,10 +64,54 @@ export default function LoginPage() {
           <p className="text-muted-foreground mt-2">Track delivery. Stay visible.</p>
         </div>
 
+        {/* Email / password form */}
+        <form onSubmit={handleEmailLogin} className="space-y-4 mb-6">
+          <div className="space-y-1.5">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          <Button type="submit" className="w-full" disabled={formLoading}>
+            {formLoading ? "Signing in…" : "Sign in"}
+          </Button>
+        </form>
+
+        {/* Divider */}
+        <div className="relative mb-6">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-gray-200" />
+          </div>
+          <div className="relative flex justify-center text-xs text-muted-foreground">
+            <span className="bg-white/80 px-2">or continue with</span>
+          </div>
+        </div>
+
+        {/* Google OAuth */}
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleGoogleLogin}
+          type="button"
           className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">

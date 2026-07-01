@@ -3,6 +3,11 @@ from datetime import datetime
 from app.models.user import UserRole
 
 
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str

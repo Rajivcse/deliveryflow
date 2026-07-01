@@ -29,6 +29,7 @@ export function UserForm({ defaultValues, onSuccess }: Props) {
 
   const [fullName, setFullName] = useState(defaultValues?.full_name ?? "");
   const [email, setEmail] = useState(defaultValues?.email ?? "");
+  const [password, setPassword] = useState("");
   const [role, setRole] = useState<UserRole>(defaultValues?.role ?? "delivery_manager");
   const [isActive, setIsActive] = useState(defaultValues?.is_active ?? true);
 
@@ -48,7 +49,7 @@ export function UserForm({ defaultValues, onSuccess }: Props) {
         setSuccess("User updated successfully.");
         setTimeout(onSuccess, 800);
       } else {
-        await usersApi.create({ full_name: fullName.trim(), email: email.trim(), role, is_active: isActive });
+        await usersApi.create({ full_name: fullName.trim(), email: email.trim(), password: password || undefined, role, is_active: isActive });
         onSuccess();
       }
     } catch (err: unknown) {
@@ -75,20 +76,33 @@ export function UserForm({ defaultValues, onSuccess }: Props) {
           </div>
 
           {!isEdit && (
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Email Address *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="user@example.com"
-                required
-              />
-              <p className="text-xs text-muted-foreground">
-                Must match the Google account this user will sign in with.
-              </p>
-            </div>
+            <>
+              <div className="space-y-1.5">
+                <Label htmlFor="email">Email Address *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="user@example.com"
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Leave blank to allow Google sign-in only"
+                  autoComplete="new-password"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Set a password to allow email/password login in addition to Google.
+                </p>
+              </div>
+            </>
           )}
 
           <div className="space-y-1.5">

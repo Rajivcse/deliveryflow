@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.exceptions import ConflictError, NotFoundError
 from app.models.user import RefreshToken, User, UserRole
 from app.schemas.user import AdminUserCreate, AdminUserUpdate
+from app.services.auth_service import hash_password
 
 
 async def get_list(
@@ -55,6 +56,7 @@ async def create(db: AsyncSession, data: AdminUserCreate) -> User:
     user = User(
         email=data.email,
         full_name=data.full_name,
+        password_hash=hash_password(data.password) if data.password else None,
         role=data.role,
         is_active=data.is_active,
     )

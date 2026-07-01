@@ -1,6 +1,7 @@
 import hashlib
 from datetime import datetime, timedelta, timezone
 
+from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import func
@@ -10,6 +11,16 @@ from app.config import settings
 from app.exceptions import UnauthorizedError
 from app.models.user import RefreshToken, User, UserRole
 from app.schemas.auth import TokenResponse
+
+_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def hash_password(plain: str) -> str:
+    return _pwd_context.hash(plain)
+
+
+def verify_password(plain: str, hashed: str) -> bool:
+    return _pwd_context.verify(plain, hashed)
 
 
 async def get_or_create_user(db: AsyncSession, google_user_info: dict) -> User:
@@ -109,3 +120,19 @@ async def revoke_token(db: AsyncSession, refresh_token_str: str) -> None:
     if db_token is not None:
         db_token.revoked = True
         await db.flush()
+
+
+async def email_login(db: AsyncSession, email: str, password: str) -> TokenResponse:
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+
+    if user is None or not user.password_hash or not verify_password(password, user.password_hash):
+        raise UnauthorizedError("Invalid email or password")
+
+    if not user.is_active:
+        raise UnauthorizedError("Account is inactive. Contact your administrator.")
+
+    user.last_login = datetime.now(timezone.utc)
+    await db.flush()
+
+    return await create_tokens(db, user)

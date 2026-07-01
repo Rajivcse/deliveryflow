@@ -9,6 +9,7 @@ from app.models.user import UserRole
 class AdminUserCreate(BaseModel):
     email: str
     full_name: str
+    password: Optional[str] = None
     role: UserRole = UserRole.delivery_manager
     is_active: bool = True
 

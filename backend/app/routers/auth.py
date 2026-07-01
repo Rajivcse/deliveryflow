@@ -11,9 +11,10 @@ from app.auth.google_oauth import (
 from app.config import settings
 from app.database import get_db
 from app.dependencies import get_current_user
-from app.schemas.auth import RefreshRequest, TokenResponse, UserResponse
+from app.schemas.auth import LoginRequest, RefreshRequest, TokenResponse, UserResponse
 from app.services.auth_service import (
     create_tokens,
+    email_login,
     get_or_create_user,
     refresh_access_token,
     revoke_token,
@@ -59,6 +60,15 @@ async def google_callback(
     )
     redirect.delete_cookie("oauth_state")
     return redirect
+
+
+@router.post("/login", response_model=TokenResponse)
+async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
+    from app.exceptions import UnauthorizedError
+    try:
+        return await email_login(db, req.email, req.password)
+    except UnauthorizedError as e:
+        raise HTTPException(status_code=401, detail=str(e))
 
 
 @router.post("/refresh", response_model=TokenResponse)
